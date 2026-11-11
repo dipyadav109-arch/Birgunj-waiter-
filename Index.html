@@ -1,0 +1,353 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AURA - Fine Dining Digital Table & Waiter Service</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Tone.js for Audio Feedback -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gold: {
+                            300: '#f6e05e',
+                            400: '#ecc94b',
+                            500: '#d4af37',
+                            600: '#b7912a',
+                            700: '#976e1a',
+                        },
+                        obsidian: '#0b0c10',
+                        charcoal: '#12141d',
+                        surface: '#1c1f2e',
+                        surfaceLight: '#2a2e45'
+                    },
+                    fontFamily: {
+                        serif: ['Cinzel', 'serif'],
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom styling for luxury touch & smooth interactions */
+        body {
+            background-color: #0b0c10;
+            color: #e2e8f0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Gold metallic glow text */
+        .gold-gradient-text {
+            background: linear-gradient(135deg, #fff2ac 0%, #d4af37 50%, #976e1a 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .gold-border-glow {
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.1);
+        }
+
+        .gold-border-glow:hover {
+            border-color: rgba(212, 175, 55, 0.8);
+            box-shadow: 0 0 25px rgba(212, 175, 55, 0.25);
+        }
+
+        /* Service Plate Realistic Table Animation */
+        .service-plate-outer {
+            background: radial-gradient(circle at center, #232738 0%, #12141d 70%, #08090d 100%);
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.8), 0 20px 40px rgba(0,0,0,0.6);
+            border: 2px solid rgba(212, 175, 55, 0.25);
+        }
+
+        .inner-rim {
+            border: 1px dashed rgba(212, 175, 55, 0.35);
+        }
+
+        /* Item Drop target pulsing effect */
+        .plate-active {
+            border-color: #d4af37 !important;
+            box-shadow: 0 0 35px rgba(212, 175, 55, 0.4), inset 0 0 30px rgba(212, 175, 55, 0.2) !important;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #12141d;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2a2e45;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #d4af37;
+        }
+
+        /* Animated Plate Item Entrance */
+        @keyframes scaleUp {
+            0% { transform: scale(0) rotate(-15deg); opacity: 0; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+
+        .plate-item-anim {
+            animation: scaleUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        /* Pulse for Waiter Call */
+        @keyframes pulseGlow {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.05); }
+        }
+
+        .waiter-pulse {
+            animation: pulseGlow 2s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-gold-500 selection:text-black">
+
+    <!-- TOP BAR / HEADER -->
+    <header class="sticky top-0 z-40 bg-charcoal/90 backdrop-blur-md border-b border-gold-500/20 px-4 lg:px-8 py-3">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <!-- Brand Logo -->
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="resetApp()">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-gold-700 via-gold-500 to-amber-200 flex items-center justify-center text-charcoal shadow-lg">
+                    <i class="fa-solid font-bold text-xl fa-utensils"></i>
+                </div>
+                <div>
+                    <h1 class="font-serif text-xl lg:text-2xl font-bold tracking-widest gold-gradient-text">AURA</h1>
+                    <p class="text-[10px] tracking-widest text-gray-400 uppercase">Haute Cuisine • Table #14</p>
+                </div>
+            </div>
+
+            <!-- Waiter Call & Direct Controls -->
+            <div class="flex items-center space-x-2 sm:space-x-4">
+                <button id="btn-call-waiter" onclick="triggerWaiterService('Service Staff')" class="relative px-3 sm:px-4 py-2 rounded-full bg-surface border border-gold-500/30 hover:border-gold-500 text-gold-400 text-xs sm:text-sm font-medium transition-all flex items-center space-x-2">
+                    <span class="w-2 h-2 rounded-full bg-gold-500 animate-ping"></span>
+                    <i class="fa-solid fa-bell"></i>
+                    <span class="hidden sm:inline">Call Waiter</span>
+                </button>
+
+                <button id="btn-request-water" onclick="triggerWaiterService('Water Refill')" class="px-3 sm:px-4 py-2 rounded-full bg-surface border border-slate-700 hover:border-blue-400 text-slate-300 hover:text-blue-300 text-xs sm:text-sm font-medium transition-all flex items-center space-x-2">
+                    <i class="fa-solid fa-glass-water text-blue-400"></i>
+                    <span class="hidden sm:inline">Water Refill</span>
+                </button>
+
+                <!-- Order Cart Badge toggle for mobile -->
+                <button onclick="toggleBillModal()" class="relative p-2 sm:px-4 sm:py-2 rounded-full bg-gold-500/10 border border-gold-500/40 text-gold-400 text-xs sm:text-sm font-semibold hover:bg-gold-500/20 transition-all flex items-center space-x-2">
+                    <i class="fa-solid fa-receipt"></i>
+                    <span id="header-cart-total" class="font-bold">$0.00</span>
+                    <span id="header-cart-count" class="absolute -top-1 -right-1 bg-gold-500 text-charcoal text-[11px] font-bold w-5 h-5 rounded-full flex items-center justify-center">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN APP CONTAINER -->
+    <main class="max-w-7xl mx-auto w-full px-3 sm:px-6 py-4 lg:py-6 grid grid-cols-1 lg:grid-cols-12 gap-6 flex-grow">
+        
+        <!-- LEFT COLUMN: CATEGORIES & MENU ITEMS (5 cols) -->
+        <section class="lg:col-span-5 flex flex-col h-[650px] lg:h-[calc(100vh-120px)] bg-charcoal/60 rounded-2xl border border-white/5 p-4 backdrop-blur-sm">
+            <!-- Search & Filters -->
+            <div class="mb-4 space-y-3">
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm"></i>
+                    <input type="text" id="search-input" oninput="filterMenu()" placeholder="Search refined dishes, wines..." class="w-full bg-surface/80 text-xs sm:text-sm text-gray-200 pl-9 pr-4 py-2.5 rounded-xl border border-white/10 focus:border-gold-500 focus:outline-none transition-all placeholder:text-gray-500">
+                </div>
+
+                <!-- Category Tabs -->
+                <div class="flex space-x-2 overflow-x-auto pb-1 scrollbar-none" id="category-tabs">
+                    <!-- Dynamic tabs populated via JS -->
+                </div>
+            </div>
+
+            <!-- Menu List -->
+            <div id="menu-container" class="flex-grow overflow-y-auto pr-1 space-y-3">
+                <!-- Menu items injected by JS -->
+            </div>
+        </section>
+
+
+        <!-- CENTER & RIGHT COLUMN: SERVICE PLATE CANVAS & LIVE TABLE ORDER (7 cols) -->
+        <section class="lg:col-span-7 flex flex-col space-y-4 h-full">
+            
+            <!-- CENTRAL INTERACTIVE SERVICE PLATE AREA -->
+            <div class="relative flex-1 bg-surface/40 rounded-2xl border border-white/5 p-4 sm:p-6 flex flex-col items-center justify-between min-h-[380px] lg:min-h-[420px] overflow-hidden">
+                
+                <!-- Plate Ambient Header -->
+                <div class="w-full flex justify-between items-center z-10">
+                    <div class="flex items-center space-x-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span class="text-xs uppercase tracking-widest text-gray-400 font-semibold">Interactive Service Platter</span>
+                    </div>
+                    <button onclick="clearPlate()" class="text-xs text-gray-400 hover:text-red-400 transition-colors flex items-center space-x-1">
+                        <i class="fa-solid fa-rotate-left"></i>
+                        <span>Clear Plate</span>
+                    </button>
+                </div>
+
+                <!-- Central Platter Visual Droppable Target -->
+                <div id="service-plate" 
+                     ondragover="handleDragOver(event)" 
+                     ondragleave="handleDragLeave(event)" 
+                     ondrop="handleDrop(event)"
+                     class="service-plate-outer relative my-4 w-64 h-64 sm:w-80 sm:h-80 md:w-96 md:h-96 rounded-full flex items-center justify-center transition-all duration-300">
+                    
+                    <!-- Decorative Ring Inner -->
+                    <div class="inner-rim w-4/5 h-4/5 rounded-full flex items-center justify-center relative pointer-events-none">
+                        <div class="text-center opacity-30 select-none" id="plate-empty-state">
+                            <i class="fa-solid fa-plate-wheat text-4xl sm:text-5xl text-gold-500 mb-2"></i>
+                            <p class="text-xs text-gold-300 uppercase tracking-widest font-serif">Drag & Drop or Click <br> to Place on Platter</p>
+                        </div>
+                    </div>
+
+                    <!-- Placed Platter Items Container (Rendered radially or grid inside plate) -->
+                    <div id="plate-items-container" class="absolute inset-0 p-8 grid grid-cols-2 gap-3 items-center justify-center pointer-events-none">
+                        <!-- Items rendered here -->
+                    </div>
+                </div>
+
+                <!-- Bottom Helper Text & Actions -->
+                <div class="w-full z-10 flex flex-col sm:flex-row items-center justify-between gap-2 border-t border-white/5 pt-3">
+                    <p class="text-xs text-gray-400 text-center sm:text-left">
+                        <i class="fa-solid fa-hand-pointer text-gold-500/70 mr-1"></i>
+                        Tap item on plate to customize spice, sides or instructions.
+                    </p>
+                    <button onclick="confirmOrderToKitchen()" class="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-gold-600 to-gold-500 hover:from-gold-500 hover:to-gold-400 text-charcoal font-bold text-xs sm:text-sm uppercase tracking-wider rounded-xl shadow-lg transition-all transform active:scale-95 flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-fire-burner"></i>
+                        <span>Send Plate to Kitchen</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- TABLE STATUS & ACTIVE PLACED ORDERS -->
+            <div class="bg-charcoal/80 rounded-2xl border border-white/5 p-4 flex-none">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="font-serif text-sm font-semibold text-gold-400 uppercase tracking-wider flex items-center space-x-2">
+                        <i class="fa-solid fa-list-check"></i>
+                        <span>Current Course / Table Tray</span>
+                    </h3>
+                    <span id="active-item-count" class="text-xs text-gray-400">0 Items Selected</span>
+                </div>
+
+                <!-- Active Items Tray List -->
+                <div id="active-tray-list" class="flex space-x-3 overflow-x-auto pb-2 scrollbar-none min-h-[70px] items-center">
+                    <!-- Items rendered dynamically -->
+                    <div class="text-xs text-gray-500 italic py-2">No active items placed on platter yet.</div>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <!-- FOOTER / QUICK SERVICE ACTION BAR -->
+    <footer class="bg-charcoal border-t border-white/10 px-4 py-3 mt-4">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs text-gray-400">
+            <div class="flex items-center space-x-4">
+                <span class="flex items-center space-x-1"><i class="fa-solid fa-circle text-[8px] text-emerald-400"></i> <span>Kitchen Status: <b>Active</b></span></span>
+                <span class="hidden md:inline">•</span>
+                <span class="hidden md:inline"><i class="fa-solid fa-clock mr-1"></i> Avg. Preparation: <b>18 mins</b></span>
+            </div>
+            
+            <div class="flex items-center space-x-3">
+                <button onclick="triggerWaiterService('Sommelier Request')" class="px-3 py-1.5 rounded-lg bg-surface hover:bg-surfaceLight text-gold-400 border border-gold-500/20 transition-all flex items-center space-x-1">
+                    <i class="fa-solid fa-wine-glass"></i>
+                    <span>Sommelier</span>
+                </button>
+                <button onclick="toggleBillModal()" class="px-4 py-1.5 rounded-lg bg-gold-500/20 hover:bg-gold-500/30 text-gold-300 font-semibold border border-gold-500/40 transition-all flex items-center space-x-1">
+                    <i class="fa-solid fa-file-invoice-dollar"></i>
+                    <span>View Bill / Pay</span>
+                </button>
+            </div>
+        </div>
+    </footer>
+
+    <!-- MODAL 1: DISH CUSTOMIZATION MODAL -->
+    <div id="customize-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-surface border border-gold-500/30 rounded-2xl max-w-md w-full p-6 space-y-5 relative shadow-2xl animate-fade-in">
+            <button onclick="closeCustomizeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            
+            <div class="flex items-center space-x-4">
+                <img id="modal-item-img" src="" alt="Dish" class="w-20 h-20 rounded-xl object-cover border border-gold-500/30">
+                <div>
+                    <h3 id="modal-item-name" class="font-serif text-lg font-bold text-gold-400">Dish Name</h3>
+                    <p id="modal-item-price" class="text-sm font-semibold text-gray-300">$0.00</p>
+                    <p id="modal-item-desc" class="text-xs text-gray-400 line-clamp-2 mt-1">Description</p>
+                </div>
+            </div>
+
+            <hr class="border-white/10">
+
+            <!-- Options Form -->
+            <div class="space-y-4 text-xs sm:text-sm">
+                <!-- Spice Level -->
+                <div>
+                    <label class="block font-semibold text-gray-300 mb-2">Spice Intensity</label>
+                    <div class="grid grid-cols-4 gap-2" id="spice-options">
+                        <button type="button" onclick="setSpice(0)" class="spice-btn px-2 py-1.5 rounded-lg border border-white/10 text-gray-300 hover:border-gold-500">Mild</button>
+                        <button type="button" onclick="setSpice(1)" class="spice-btn px-2 py-1.5 rounded-lg border border-white/10 text-gray-300 hover:border-gold-500">Medium</button>
+                        <button type="button" onclick="setSpice(2)" class="spice-btn px-2 py-1.5 rounded-lg border border-white/10 text-gray-300 hover:border-gold-500">Hot 🔥</button>
+                        <button type="button" onclick="setSpice(3)" class="spice-btn px-2 py-1.5 rounded-lg border border-white/10 text-gray-300 hover:border-gold-500">Chef Special 🌶️</button>
+                    </div>
+                </div>
+
+                <!-- Complementary Sauce & Addons -->
+                <div>
+                    <label class="block font-semibold text-gray-300 mb-2">Extra Sauces & Accoutrements (+$2.00 each)</label>
+                    <div class="space-y-2" id="sauce-options">
+                        <label class="flex items-center justify-between bg-charcoal p-2.5 rounded-lg border border-white/5 cursor-pointer">
+                            <span class="text-gray-300">Truffle Aioli</span>
+                            <input type="checkbox" value="Truffle Aioli" class="sauce-checkbox class-checkbox text-gold-500 rounded focus:ring-0">
+                        </label>
+                        <label class="flex items-center justify-between bg-charcoal p-2.5 rounded-lg border border-white/5 cursor-pointer">
+                            <span class="text-gray-300">House Garlic Butter Sauce</span>
+                            <input type="checkbox" value="Garlic Butter" class="sauce-checkbox text-gold-500 rounded focus:ring-0">
+                        </label>
+                        <label class="flex items-center justify-between bg-charcoal p-2.5 rounded-lg border border-white/5 cursor-pointer">
+                            <span class="text-gray-300">Aged Balsamic Reduction</span>
+                            <input type="checkbox" value="Balsamic Reduction" class="sauce-checkbox text-gold-500 rounded focus:ring-0">
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Special Culinary Instructions -->
+                <div>
+                    <label class="block font-semibold text-gray-300 mb-1">Special Culinary Instructions</label>
+                    <textarea id="modal-notes" rows="2" placeholder="Dietary restrictions, allergies, or preparation preferences..." class="w-full bg-charcoal text-xs text-gray-200 p-2.5 rounded-xl border border-white/10 focus:border-gold-500 focus:outline-none"></textarea>
+                </div>
+            </div>
+
+            <!-- Modal Action Buttons -->
+            <div class="flex items-center space-x-3 pt-2">
+                <button onclick="closeCustomizeModal()" class="w-1/2 py-2.5 rounded-xl border border-white/10 text-gray-400 hover:bg-white/5 text-xs font-semibold">Cancel</button>
+                <button onclick="saveCustomizedItem()" class="w-1/2 py-2.5 bg-gold-500 hover:bg-gold-400 text-charcoal font-bold text-xs uppercase tracking-wider rounded-xl transition-all">Save & Place on Plate</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: INTERACTIVE BILL & SPLIT CHECK MODAL -->
+    <div id="bill-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-surface border border-gold-500/30 rounded-2xl max-w-lg w-full p-6 space-y-5 relative shadow-2xl max-h-[90vh] flex flex-col">
+            
+            <div class="flex items-center justify-between pb-3 border-b border-white/10">
+                <div class="flex items-center space-x-2">
+          
